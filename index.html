@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HONESTLY · verified search · ◊</title>
+<meta name="description" content="Sovereign single-file answer engine. BYOK search + LLM. 3-vote adversarial verification per claim. Konomi-signed answer envelope. MIT.">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238b1a1a'/%3E%3Ctext x='32' y='44' font-size='38' text-anchor='middle' fill='%23e8e8ea'%3E◊%3C/text%3E%3C/svg%3E">
+
+<style>
+:root{
+  --void:#0a0a0f; --void-2:#11131a; --void-3:#1a1a22;
+  --ox:#8b1a1a; --ox-2:#a32424; --ox-dim:#5a1212;
+  --cream:#e8e8ea; --cream-dim:#8a8a92; --cream-deep:#5a5a62;
+  --gold:#b8974a; --green:#22a558; --blue:#2563eb; --red:#dc2626; --purple:#7e3eb3;
+  --line:#1a1a22; --radius:6px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--void);color:var(--cream);font:14px/1.55 -apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 14px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+header .brand{font:700 22px/1 'Times New Roman',serif;letter-spacing:.5px}
+header .brand .ox{color:var(--ox-2)}
+header nav{display:flex;gap:6px;flex-wrap:wrap}
+.nav-btn{background:none;border:1px solid var(--line);color:var(--cream-dim);padding:7px 12px;border-radius:5px;cursor:pointer;font:13px/1 inherit}
+.nav-btn:hover{border-color:var(--gold);color:var(--cream)}
+.nav-btn.active{background:var(--ox);color:#fff;border-color:var(--ox)}
+.kcc-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(184,151,74,.16);color:var(--gold);padding:5px 11px;border-radius:999px;font:600 13px/1 ui-monospace,"SF Mono",monospace;border:1px solid rgba(184,151,74,.3);margin-left:6px}
+.kcc-pill #kccBalance{color:var(--cream)}
+.view{display:none}
+.view.active{display:block}
+.tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+.dim{color:var(--cream-dim)}
+h1,h2,h3{margin:0 0 8px;font-family:'Times New Roman',Georgia,serif;letter-spacing:-.3px}
+h1{font-size:32px;line-height:1.1}
+h1 .hl{color:var(--ox-2)}
+h2{font-size:22px}
+h3{font-size:16px;font-family:-apple-system,system-ui,sans-serif;font-weight:600;letter-spacing:0}
+.btn{display:inline-block;background:var(--ox);color:#fff;border:0;padding:9px 16px;border-radius:5px;font:600 13px/1 inherit;cursor:pointer;letter-spacing:.3px;text-decoration:none}
+.btn:hover{background:var(--ox-2)}
+.btn-ghost{background:transparent;color:var(--cream);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-large{padding:14px 28px;font-size:15px}
+
+/* ASK · the main flow */
+.ask-shell{background:linear-gradient(180deg,#15171f,var(--void));border:1px solid var(--line);border-radius:10px;padding:30px 28px;margin-bottom:18px}
+.ask-shell .lead{color:var(--cream-dim);max-width:640px;margin:8px auto 22px;text-align:center}
+.ask-form{max-width:780px;margin:0 auto}
+.ask-input{width:100%;background:var(--void);border:1.5px solid var(--line);border-radius:8px;padding:18px 20px;color:var(--cream);font:16px/1.5 inherit;resize:vertical;min-height:90px}
+.ask-input:focus{outline:0;border-color:var(--ox-2)}
+.ask-row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px}
+.ask-row .opts{display:flex;gap:14px;align-items:center;font-size:12px;color:var(--cream-dim);flex-wrap:wrap}
+.ask-row .opts label{cursor:pointer}
+.ask-row .opts input[type=number]{width:54px;background:var(--void-2);border:1px solid var(--line);border-radius:4px;padding:4px 6px;color:var(--cream);font:12px inherit}
+.example-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;justify-content:center}
+.example-pill{background:var(--void-2);border:1px solid var(--line);color:var(--cream-dim);padding:6px 10px;border-radius:999px;font-size:11px;cursor:pointer}
+.example-pill:hover{border-color:var(--gold);color:var(--cream)}
+
+/* PROGRESS */
+.progress{background:var(--void-2);border:1px solid var(--line);border-radius:8px;padding:18px;margin-bottom:18px;display:none}
+.progress.active{display:block}
+.prog-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+@media (max-width:680px){.prog-steps{grid-template-columns:1fr}}
+.prog-step{background:var(--void-3);border:1px solid var(--line);border-radius:5px;padding:10px 12px;text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--cream-deep);position:relative}
+.prog-step.active{background:rgba(184,151,74,.14);border-color:var(--gold);color:var(--gold)}
+.prog-step.done{background:rgba(34,165,88,.12);border-color:var(--green);color:var(--green)}
+.prog-step.error{background:rgba(220,38,38,.12);border-color:var(--red);color:var(--red)}
+.prog-step .n{font-weight:700;font-size:14px;display:block;margin-bottom:2px}
+.prog-log{font-family:ui-monospace,"SF Mono",monospace;font-size:11px;color:var(--cream-dim);max-height:140px;overflow-y:auto;padding:10px;background:var(--void);border:1px solid var(--line);border-radius:5px;line-height:1.6}
+.prog-log .ln{padding:1px 0}
+.prog-log .ln.warn{color:var(--gold)}
+.prog-log .ln.err{color:var(--red)}
+.prog-log .ln.ok{color:var(--green)}
+
+/* ANSWER */
+.answer{background:var(--void-2);border:1px solid var(--line);border-radius:8px;padding:24px;margin-bottom:14px;display:none}
+.answer.active{display:block}
+.ans-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.ans-head h2{margin:0;font-size:18px;font-family:-apple-system,system-ui,sans-serif}
+.ans-meta{font-size:11px;color:var(--cream-deep);font-family:ui-monospace,monospace}
+.ans-meta .hash{word-break:break-all}
+
+.claim{padding:12px 14px;border-radius:5px;border:1px solid var(--line);margin-bottom:8px;background:var(--void-3)}
+.claim.confirmed{border-left:3px solid var(--green)}
+.claim.refuted{border-left:3px solid var(--red);opacity:.7}
+.claim.inconclusive{border-left:3px solid var(--gold)}
+.claim .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.claim .text{font-size:14px;line-height:1.55;flex:1}
+.claim .verdict{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 7px;border-radius:3px;font-weight:700;white-space:nowrap}
+.claim .verdict.confirmed{background:rgba(34,165,88,.18);color:var(--green)}
+.claim .verdict.refuted{background:rgba(220,38,38,.18);color:var(--red)}
+.claim .verdict.inconclusive{background:rgba(184,151,74,.18);color:var(--gold)}
+.claim .src{font-size:11px;color:var(--cream-deep);margin-top:6px}
+.claim .src a{color:var(--cream-dim);text-decoration:none;border-bottom:1px dotted var(--line);word-break:break-all}
+.claim .src a:hover{color:var(--gold);border-color:var(--gold)}
+.claim .votes{font-family:ui-monospace,monospace;font-size:10px;color:var(--cream-deep);margin-top:4px}
+
+.refuted-box{background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.3);border-radius:5px;padding:14px;margin:14px 0}
+.refuted-box h3{margin:0 0 8px;color:var(--red);font-size:13px}
+
+.ans-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:18px}
+
+/* SETTINGS */
+.set-card{background:var(--void-2);border:1px solid var(--line);border-radius:6px;padding:18px;margin-bottom:14px}
+.set-card h3{margin:0 0 10px;font-size:15px}
+.set-card .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;gap:10px}
+.set-card .row:last-child{border-bottom:0}
+.set-card .row .l{color:var(--cream-dim);font-size:12px}
+.set-card .row .v{font-family:ui-monospace,monospace;font-size:11px;color:var(--gold)}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:11px;color:var(--cream-dim);letter-spacing:1px;text-transform:uppercase}
+.field input,.field select,.field textarea{background:var(--void);border:1px solid var(--line);border-radius:5px;padding:9px 12px;color:var(--cream);font:13px/1.4 inherit}
+.field .help{font-size:11px;color:var(--cream-deep);margin-top:3px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:600px){.field-row{grid-template-columns:1fr}}
+.kid{font-family:ui-monospace,monospace;font-size:10px;color:var(--cream-deep);word-break:break-all}
+.toggle{position:relative;display:inline-block;width:42px;height:22px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle .slider{position:absolute;cursor:pointer;inset:0;background:var(--void-3);border-radius:11px;border:1px solid var(--line);transition:.2s}
+.toggle .slider:before{content:"";position:absolute;height:16px;width:16px;left:2px;top:2px;background:var(--cream-dim);border-radius:50%;transition:.2s}
+.toggle input:checked + .slider{background:var(--ox);border-color:var(--ox)}
+.toggle input:checked + .slider:before{transform:translateX(20px);background:#fff}
+
+/* HISTORY */
+.hist-list{display:grid;gap:8px}
+.hist-row{background:var(--void-2);border:1px solid var(--line);border-radius:5px;padding:12px 16px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;cursor:pointer}
+.hist-row:hover{border-color:var(--gold)}
+.hist-row .q{font-size:14px;color:var(--cream)}
+.hist-row .meta{font-size:11px;color:var(--cream-dim);margin-top:3px}
+.hist-row .hash{font-family:ui-monospace,monospace;font-size:10px;color:var(--cream-deep);margin-top:3px}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:90;padding:16px}
+.modal.open{display:flex}
+.modal-card{background:var(--void-2);border:1px solid var(--line);border-radius:8px;padding:24px;max-width:560px;width:100%;max-height:92vh;overflow:auto}
+.modal-card h3{margin:0 0 6px;font:700 22px/1.1 'Times New Roman',serif}
+
+.code-block{font-family:ui-monospace,monospace;font-size:11px;background:var(--void);padding:10px;border:1px solid var(--line);border-radius:4px;color:var(--cream-dim);word-break:break-all;max-height:200px;overflow:auto}
+
+footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--cream-deep);text-align:center;line-height:1.7}
+footer a{color:var(--cream-dim);text-decoration:none;border-bottom:1px dotted var(--line)}
+footer a:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="brand">◊ <span class="ox">HONESTLY</span> · verified search</div>
+  <nav>
+    <button class="nav-btn active" onclick="goView('ask')">ask</button>
+    <button class="nav-btn" onclick="goView('history')">history</button>
+    <button class="nav-btn" onclick="goView('settings')">settings</button>
+    <button class="nav-btn" onclick="goView('about')">about</button>
+    <span class="kcc-pill" title="κ-balance · earned per clean answer">κ <span id="kccBalance">0</span></span>
+  </nav>
+</header>
+
+<!-- ═══════════ ASK ═══════════ -->
+<section class="view active" id="ask">
+  <div class="ask-shell">
+    <div class="tag" style="text-align:center">verified answers · adversarial verification · konomi-signed</div>
+    <h1 style="text-align:center;margin-top:6px">Ask · <span class="hl">we verify before we answer.</span></h1>
+    <p class="lead">Three independent verifications on every factual claim. Refuted claims listed openly. Sources cited. Each answer Ed25519-signed against your Konomi key · share the envelope and anyone can verify what was said, by whom, when.</p>
+
+    <div class="ask-form">
+      <textarea class="ask-input" id="askQuestion" placeholder="What do you want to honestly know?&#10;e.g. Is RFK Jr correct that the WHO mishandled the pandemic?&#10;e.g. Did GDPR genuinely improve EU citizens' privacy?&#10;e.g. What's the actual margin on a Tesla Model 3 sale?"></textarea>
+
+      <div class="ask-row">
+        <div class="opts">
+          <label>sources <input type="number" id="optSources" value="6" min="3" max="15"></label>
+          <label>verifications/claim <input type="number" id="optVerif" value="3" min="2" max="5"></label>
+          <label><input type="checkbox" id="optStrict" checked> strict mode <span style="opacity:.6">(2/3 must confirm)</span></label>
+        </div>
+        <button class="btn btn-large" id="askBtn" onclick="runQuery()">◊ ask honestly</button>
+      </div>
+
+      <div class="example-pills">
+        <span class="example-pill" onclick="setExample('Is RFK Jr correct that the WHO mishandled the pandemic?')">RFK · WHO</span>
+        <span class="example-pill" onclick="setExample('Did GDPR genuinely improve EU citizens privacy?')">GDPR · privacy</span>
+        <span class="example-pill" onclick="setExample('What is the actual current PFI burden on the NHS in 2024-2025?')">NHS · PFI</span>
+        <span class="example-pill" onclick="setExample('Is the EU AI Act enforceable against US-headquartered AI companies?')">EU AI Act · enforcement</span>
+        <span class="example-pill" onclick="setExample('Does insourcing NHS services actually save money?')">NHS · insourcing</span>
+        <span class="example-pill" onclick="loadDemoAnswer()">load demo answer (no keys needed)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress" id="progress">
+    <div class="prog-steps">
+      <div class="prog-step" data-step="0"><span class="n">1</span>Search</div>
+      <div class="prog-step" data-step="1"><span class="n">2</span>Fetch</div>
+      <div class="prog-step" data-step="2"><span class="n">3</span>Extract</div>
+      <div class="prog-step" data-step="3"><span class="n">4</span>Verify</div>
+      <div class="prog-step" data-step="4"><span class="n">5</span>Sign</div>
+    </div>
+    <div class="prog-log" id="progLog"></div>
+  </div>
+
+  <!-- ANSWER -->
+  <div class="answer" id="answer">
+    <div class="ans-head">
+      <h2 id="ansQ">Question</h2>
+      <div class="ans-meta">
+        <div>chain · <span class="hash" id="ansHash">—</span></div>
+        <div id="ansVerdict" style="margin-top:4px;font-size:13px;font-weight:600"></div>
+      </div>
+    </div>
+
+    <div id="ansBody"></div>
+
+    <div class="refuted-box" id="ansRefuted" style="display:none">
+      <h3>❌ Refuted claims · the honesty layer</h3>
+      <div id="ansRefutedList"></div>
+    </div>
+
+    <div class="ans-actions">
+      <button class="btn btn-ghost btn-sm" onclick="copyAnswer()">copy markdown</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadEnvelope()">download signed envelope</button>
+      <button class="btn btn-ghost btn-sm" onclick="generateShareUrl()">generate share URL</button>
+      <button class="btn btn-ghost btn-sm" onclick="newQuestion()">new question</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ HISTORY ═══════════ -->
+<section class="view" id="history">
+  <div class="tag">audit chain · every answer permanent</div>
+  <h2 style="margin:4px 0 14px;font:700 22px/1.1 'Times New Roman',serif">History.</h2>
+  <div class="hist-list" id="histList"></div>
+  <p class="dim" style="margin-top:18px;font-size:12px">Every answer signed against your Konomi key · share the envelope, others can verify it cryptographically.</p>
+</section>
+
+<!-- ═══════════ SETTINGS ═══════════ -->
+<section class="view" id="settings">
+  <div class="tag">BYOK · sovereign identity</div>
+  <h2 style="margin:4px 0 14px;font:700 22px/1.1 'Times New Roman',serif">Settings.</h2>
+
+  <div class="set-card">
+    <h3>Search provider · BYOK</h3>
+    <p class="dim" style="font-size:13px;margin-top:0">Bring your own key. All free tiers work. Tavily has the best free quota (1000/mo) and the cleanest API. Brave has 2000/mo free.</p>
+    <div class="field">
+      <label>Provider</label>
+      <select id="searchProvider">
+        <option value="">— mock mode (demo only · no real search) —</option>
+        <option value="tavily">Tavily (1000/mo free · best default)</option>
+        <option value="brave">Brave Search (2000/mo free)</option>
+        <option value="serper">Serper (2500/mo free)</option>
+        <option value="exa">Exa (1000/mo free)</option>
+      </select>
+    </div>
+    <div class="field"><label>API key</label><input type="password" id="searchKey" placeholder="sk-… or tvly-…"></div>
+    <button class="btn btn-sm" onclick="saveSearchConfig()">Save</button>
+    <p class="help" style="margin-top:8px">Key stays in your browser's localStorage. Only sent to the provider you picked. We can't read it · we don't have a backend.</p>
+  </div>
+
+  <div class="set-card">
+    <h3>LLM provider · BYOK</h3>
+    <p class="dim" style="font-size:13px;margin-top:0">For synthesis + verification. Same key used for both unless you set the verifier separately below.</p>
+    <div class="field">
+      <label>Provider</label>
+      <select id="llmProvider">
+        <option value="">— mock mode (template answers only) —</option>
+        <option value="anthropic">Anthropic Claude</option>
+        <option value="openai">OpenAI GPT</option>
+        <option value="google">Google Gemini</option>
+        <option value="webllm">WebLLM offline (downloads ~2GB · Llama 3.2 3B)</option>
+      </select>
+    </div>
+    <div class="field"><label>API key</label><input type="password" id="llmKey" placeholder="sk-ant-…"></div>
+    <div class="field">
+      <label>Synthesis model (leave default if unsure)</label>
+      <input type="text" id="llmModel" placeholder="claude-sonnet-4-5-20250929 / gpt-4o / gemini-2.0-flash">
+    </div>
+    <div class="field">
+      <label>Verifier model (optional · use cheaper model here to save cost)</label>
+      <input type="text" id="verifModel" placeholder="claude-haiku-4 / gpt-4o-mini / gemini-2.0-flash-lite">
+    </div>
+    <button class="btn btn-sm" onclick="saveLlmConfig()">Save</button>
+  </div>
+
+  <div class="set-card">
+    <h3>◊ Konomi identity</h3>
+    <p class="dim" style="font-size:13px;margin-top:0">Ed25519 keypair via libsodium-wasm · keypair stored in IndexedDB · signs every answer envelope. Seed-export to carry your identity across devices.</p>
+    <div class="row"><span class="l">status</span><span class="v" id="konomiStatus">initialising…</span></div>
+    <div class="row"><span class="l">public key</span><span class="kid" id="konomiPubKey">—</span></div>
+    <div class="row"><span class="l">created</span><span class="v" id="konomiCreated">—</span></div>
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="exportKonomiSeed()">Export seed</button>
+      <button class="btn btn-ghost btn-sm" onclick="importKonomiSeed()">Import seed</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyPubKey()">Copy public key</button>
+    </div>
+  </div>
+
+  <div class="set-card">
+    <h3>κ ledger</h3>
+    <p class="dim" style="font-size:13px;margin-top:0">+5 κ per answer with zero refuted claims · 0 κ otherwise. Quality rewarded, not volume. Broadcast on <code style="color:var(--gold)">kcc-signal</code>.</p>
+    <div class="row"><span class="l">current balance</span><span class="v" id="kccCurrentBal">0</span></div>
+    <div class="row"><span class="l">lifetime earned</span><span class="v" id="kccLifetime">0</span></div>
+    <div class="row"><span class="l">clean answers</span><span class="v" id="kccCleans">0</span></div>
+  </div>
+
+  <div class="set-card">
+    <h3>Sister tools in this browser</h3>
+    <div id="meshList" class="kid" style="line-height:1.8">listening…</div>
+  </div>
+</section>
+
+<!-- ═══════════ ABOUT ═══════════ -->
+<section class="view" id="about">
+  <div class="tag">manifesto</div>
+  <h2 style="font:700 26px/1.2 'Times New Roman',serif;margin-top:4px">Perplexity tells you. We prove it.</h2>
+  <div style="max-width:740px;color:var(--cream-dim);font-size:15px;line-height:1.7;margin-top:18px">
+    <p>Every LLM-driven answer engine has the same problem: <strong style="color:var(--cream)">they hallucinate</strong>. They sound confident. They cite real-looking sources that don't say what's claimed. And there's no easy way for you to know which sentences survived an honest stress-test.</p>
+
+    <p>HONESTLY is built on a different doctrine.</p>
+
+    <p>Every factual claim returned by the synthesis LLM gets <strong style="color:var(--cream)">three independent verification passes</strong>. Each pass is framed differently · one tries to refute, one tries to confirm, one stays neutral and weighs evidence. The verdict is two-of-three. Claims that don't survive get listed openly under "refuted claims" · same honesty pattern that won attention for <a href="https://github.com/sjgant80-hub/nhs-reinjection" style="color:var(--gold)">nhs-reinjection</a>'s ~£600m/year thesis (we listed which campaign claims got KILLED in adversarial verification · which made the surviving claims more credible).</p>
+
+    <p>The whole answer is then signed against your Konomi Ed25519 keypair. The envelope contains the question, the timestamp, the cited claims, the refuted-claims list, the source URLs, and the audit-chain hash. Share the envelope · anyone who has your public key can <strong style="color:var(--cream)">cryptographically verify what you got told, when, by which sources</strong>. Try doing that with Perplexity.</p>
+
+    <h3 style="color:var(--cream);font-family:-apple-system,system-ui;font-weight:600;margin-top:22px">How it differs</h3>
+    <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:13px">
+      <tr><th style="text-align:left;color:var(--cream-dim);padding:6px 8px;border-bottom:1px solid var(--line)">Property</th><th style="text-align:left;color:var(--cream-dim);padding:6px 8px;border-bottom:1px solid var(--line)">Perplexity</th><th style="text-align:left;color:var(--cream-dim);padding:6px 8px;border-bottom:1px solid var(--line)">HONESTLY</th></tr>
+      <tr><td style="padding:6px 8px;border-bottom:1px solid var(--line)">Price</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">$20/mo Pro</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">$0 · MIT · BYOK</td></tr>
+      <tr><td style="padding:6px 8px;border-bottom:1px solid var(--line)">Hallucination</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">known issue</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">3-vote adversarial verification · refuted listed openly</td></tr>
+      <tr><td style="padding:6px 8px;border-bottom:1px solid var(--line)">Privacy</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">they log queries</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">sovereign · your keys · no backend</td></tr>
+      <tr><td style="padding:6px 8px;border-bottom:1px solid var(--line)">Sharing</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">their URL (their data)</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">Konomi-signed envelope · cryptographically yours</td></tr>
+      <tr><td style="padding:6px 8px;border-bottom:1px solid var(--line)">Moat</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">UX + brand</td><td style="padding:6px 8px;">"verified-before-served" honesty layer</td></tr>
+    </table>
+
+    <h3 style="color:var(--cream);font-family:-apple-system,system-ui;font-weight:600;margin-top:22px">For builders</h3>
+    <p>The engine is 3 swappable functions documented in <a href="https://github.com/sjgant80-hub/honestly/blob/main/src/pro-slot.md" style="color:var(--gold)"><code>src/pro-slot.md</code></a>: <code>search()</code> · <code>synthesise()</code> · <code>verify()</code>. Drop in your provider · the UI, audit chain, and signing layer stay put. Same pattern as <a href="https://github.com/sjgant80-hub/groundlevel-sdk" style="color:var(--gold)">groundlevel-sdk</a>.</p>
+
+    <h3 style="color:var(--cream);font-family:-apple-system,system-ui;font-weight:600;margin-top:22px">Estate</h3>
+    <p>HONESTLY is built on the same audit-chain doctrine as the rest of the Fall* estate. The κ-ledger broadcasts on <code style="color:var(--gold)">kcc-signal</code> so sister tools see your balance. Your Konomi keypair is the same one signing your <a href="https://github.com/sjgant80-hub/kard" style="color:var(--gold)">KARD</a> trophies, your <a href="https://github.com/sjgant80-hub/operator" style="color:var(--gold)">OPERATOR</a> engagements, and your <a href="https://github.com/sjgant80-hub/groundlevel" style="color:var(--gold)">GroundLevel</a> case files. One identity. Every tool. Sovereign.</p>
+  </div>
+</section>
+
+<footer>
+  <div>◊ <strong>HONESTLY</strong> · v1.0 · MIT open source · zero tracking · sovereign single-file · BYOK keys</div>
+  <div style="margin-top:6px">part of the Fall* estate · sister tools: <a href="https://github.com/sjgant80-hub/groundlevel">groundlevel</a> · <a href="https://github.com/sjgant80-hub/operator">operator</a> · <a href="https://github.com/sjgant80-hub/nhs-reinjection">nhs-reinjection</a> · <a href="https://github.com/sjgant80-hub/kard">kard</a></div>
+  <div style="margin-top:6px">repo · <a href="https://github.com/sjgant80-hub/honestly">github.com/sjgant80-hub/honestly</a> · pro-slot · <a href="https://github.com/sjgant80-hub/honestly/blob/main/src/pro-slot.md">src/pro-slot.md</a></div>
+</footer>
+
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h3 id="mTitle">Title</h3>
+    <div id="mBody"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ═════════════════════════════════════════════════════════════
+// HONESTLY · sovereign answer engine
+// ═════════════════════════════════════════════════════════════
+
+const LS = 'honestly.v1.';
+function lsGet(k, fb) { try { const v = localStorage.getItem(LS+k); return v ? JSON.parse(v) : fb; } catch (_) { return fb; } }
+function lsSet(k, v) { try { localStorage.setItem(LS+k, JSON.stringify(v)); } catch (_) {} }
+
+let HISTORY = lsGet('history', []);
+let CURRENT_ANSWER = null;
+
+// ── views
+function goView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === name));
+  document.querySelectorAll('.nav-btn').forEach((b, i) => {
+    const txt = b.textContent.trim().toLowerCase();
+    b.classList.toggle('active', txt === name);
+  });
+  if (name === 'history') renderHistory();
+  if (name === 'settings') loadSettings();
+}
+
+function setExample(q) {
+  document.getElementById('askQuestion').value = q;
+  document.getElementById('askQuestion').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function newQuestion() {
+  document.getElementById('answer').classList.remove('active');
+  document.getElementById('progress').classList.remove('active');
+  document.getElementById('askQuestion').value = '';
+  document.getElementById('askQuestion').focus();
+}
+
+// ═════════════════════════════════════════════════════════════
+// SEARCH · provider abstraction
+// ═════════════════════════════════════════════════════════════
+const SEARCH = {
+  async query(q, n = 6) {
+    const cfg = lsGet('searchConfig', {});
+    if (!cfg.provider || !cfg.key) {
+      log('mock mode · returning placeholder sources (set BYOK key in settings)', 'warn');
+      return mockSources(q, n);
+    }
+    try {
+      if (cfg.provider === 'tavily') {
+        const r = await fetch('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ api_key: cfg.key, query: q, max_results: n, include_answer: false }),
+        });
+        const j = await r.json();
+        return (j.results || []).slice(0, n).map(x => ({ title: x.title, url: x.url, content: x.content || x.snippet || '' }));
+      }
+      if (cfg.provider === 'brave') {
+        const r = await fetch('https://api.search.brave.com/res/v1/web/search?q=' + encodeURIComponent(q) + '&count=' + n, {
+          headers: { 'X-Subscription-Token': cfg.key, 'Accept': 'application/json' },
+        });
+        const j = await r.json();
+        return ((j.web && j.web.results) || []).slice(0, n).map(x => ({ title: x.title, url: x.url, content: x.description || '' }));
+      }
+      if (cfg.provider === 'serper') {
+        const r = await fetch('https://google.serper.dev/search', {
+          method: 'POST',
+          headers: { 'X-API-KEY': cfg.key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ q, num: n }),
+        });
+        const j = await r.json();
+        return (j.organic || []).slice(0, n).map(x => ({ title: x.title, url: x.link, content: x.snippet || '' }));
+      }
+      if (cfg.provider === 'exa') {
+        const r = await fetch('https://api.exa.ai/search', {
+          method: 'POST',
+          headers: { 'x-api-key': cfg.key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: q, numResults: n, contents: { text: true } }),
+        });
+        const j = await r.json();
+        return (j.results || []).slice(0, n).map(x => ({ title: x.title, url: x.url, content: x.text || '' }));
+      }
+    } catch (e) {
+      log('search failed · ' + e.message, 'err');
+      return mockSources(q, n);
+    }
+  },
+};
+
+function mockSources(q, n) {
+  return Array.from({ length: Math.min(n, 4) }, (_, i) => ({
+    title: 'Mock source ' + (i+1) + ' for: ' + q.slice(0, 60),
+    url: 'https://example.com/' + (i+1),
+    content: 'This is mock content. Set a search API key in Settings to get real sources. The verification pipeline still runs · it just verifies against this placeholder text. Useful for testing the flow without burning API quota.',
+  }));
+}
+
+// ═════════════════════════════════════════════════════════════
+// LLM · cascade abstraction
+// ═════════════════════════════════════════════════════════════
+const LLM = {
+  async call(systemPrompt, userMsg, opts = {}) {
+    const cfg = lsGet('llmConfig', {});
+    if (!cfg.provider || !cfg.key) {
+      log('mock LLM · returning template response', 'warn');
+      return mockLLM(userMsg, opts);
+    }
+    const model = opts.model || cfg.synthesisModel || defaultModel(cfg.provider);
+    try {
+      if (cfg.provider === 'anthropic') {
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': cfg.key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({ model, max_tokens: opts.maxTokens || 1200, system: systemPrompt, messages: [{ role: 'user', content: userMsg }] }),
+        });
+        if (!r.ok) throw new Error('Anthropic ' + r.status + ': ' + await r.text());
+        const j = await r.json();
+        return j.content[0].text;
+      }
+      if (cfg.provider === 'openai') {
+        const r = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+          body: JSON.stringify({ model, max_tokens: opts.maxTokens || 1200, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }] }),
+        });
+        if (!r.ok) throw new Error('OpenAI ' + r.status);
+        const j = await r.json();
+        return j.choices[0].message.content;
+      }
+      if (cfg.provider === 'google') {
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + cfg.key, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents: [{ role: 'user', parts: [{ text: userMsg }] }], generationConfig: { maxOutputTokens: opts.maxTokens || 1200 } }),
+        });
+        if (!r.ok) throw new Error('Google ' + r.status);
+        const j = await r.json();
+        return j.candidates[0].content.parts[0].text;
+      }
+      if (cfg.provider === 'webllm') {
+        // (lazy-loaded · same pattern as kard)
+        log('WebLLM not loaded in v1.0 · use cloud BYOK', 'warn');
+        return mockLLM(userMsg, opts);
+      }
+    } catch (e) {
+      log('LLM call failed · ' + e.message, 'err');
+      return mockLLM(userMsg, opts);
+    }
+  },
+};
+function defaultModel(p) {
+  return { anthropic: 'claude-sonnet-4-5-20250929', openai: 'gpt-4o', google: 'gemini-2.0-flash' }[p] || '';
+}
+function mockLLM(msg, opts) {
+  if (opts.kind === 'extract') {
+    return JSON.stringify({ claims: [
+      { text: 'Mock claim 1 about the topic · (set BYOK LLM key in Settings to get real)', source_index: 0 },
+      { text: 'Mock claim 2 derived from sources', source_index: 1 },
+      { text: 'Mock claim 3 with caveat', source_index: 0 },
+    ]});
+  }
+  if (opts.kind === 'verify') {
+    return JSON.stringify({ verdict: 'inconclusive', reason: 'mock mode · no real verification possible without LLM key' });
+  }
+  return 'Mock LLM response · set BYOK key in Settings to get real synthesis.';
+}
+
+// ═════════════════════════════════════════════════════════════
+// PIPELINE
+// ═════════════════════════════════════════════════════════════
+const PROG = { phase: 0, log: [] };
+function setPhase(i, status) {
+  document.querySelectorAll('.prog-step').forEach((el, idx) => {
+    el.classList.remove('active', 'done', 'error');
+    if (idx < i) el.classList.add('done');
+    else if (idx === i) el.classList.add(status || 'active');
+  });
+  PROG.phase = i;
+}
+function log(msg, kind) {
+  const el = document.getElementById('progLog');
+  PROG.log.push({ msg, kind });
+  el.innerHTML = PROG.log.map(l => `<div class="ln ${l.kind||''}">${esc(l.msg)}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function runQuery() {
+  const q = document.getElementById('askQuestion').value.trim();
+  if (!q) return toast('paste a question first');
+  document.getElementById('askBtn').disabled = true;
+  document.getElementById('answer').classList.remove('active');
+  document.getElementById('progress').classList.add('active');
+  PROG.log = [];
+  setPhase(0);
+
+  try {
+    // PHASE 1 · SEARCH
+    log('searching for: "' + q + '"');
+    const n = parseInt(document.getElementById('optSources').value, 10);
+    const sources = await SEARCH.query(q, n);
+    log('found ' + sources.length + ' sources', 'ok');
+    setPhase(1);
+
+    // PHASE 2 · FETCH (we use the snippets returned · no further fetch in v1 to avoid CORS)
+    log('using source snippets for context (browser-CORS safe · upgrade to full fetch via worker in v1.2)');
+    setPhase(2);
+
+    // PHASE 3 · EXTRACT CLAIMS
+    log('synthesising claims from sources via LLM…');
+    const corpus = sources.map((s, i) => `[${i}] ${s.title}\n${s.content}\nSource: ${s.url}`).join('\n\n---\n\n');
+    const extractPrompt = `You are a research assistant. Read these sources and extract 4-8 specific, factual claims that answer the user's question. Each claim must be a single sentence and tied to one source index from the corpus. Return STRICT JSON: {"claims": [{"text": "claim text", "source_index": N}, ...]}`;
+    const extractResp = await LLM.call(extractPrompt, `QUESTION: ${q}\n\nSOURCES:\n${corpus}`, { kind: 'extract', maxTokens: 1500 });
+    const claims = parseClaims(extractResp, sources);
+    log('extracted ' + claims.length + ' candidate claims', 'ok');
+    setPhase(3);
+
+    // PHASE 4 · VERIFY (3-vote adversarial per claim)
+    const numVerif = parseInt(document.getElementById('optVerif').value, 10);
+    const strict = document.getElementById('optStrict').checked;
+    const verified = [];
+    for (let i = 0; i < claims.length; i++) {
+      log('verifying claim ' + (i+1) + '/' + claims.length + ': ' + claims[i].text.slice(0, 80) + '…');
+      const votes = await verifyClaim(claims[i], sources, numVerif);
+      const tally = { confirmed: 0, refuted: 0, inconclusive: 0 };
+      votes.forEach(v => tally[v.verdict] = (tally[v.verdict] || 0) + 1);
+      const threshold = strict ? Math.ceil(numVerif * 2 / 3) : Math.ceil(numVerif / 2);
+      let verdict;
+      if (tally.confirmed >= threshold) verdict = 'confirmed';
+      else if (tally.refuted >= threshold) verdict = 'refuted';
+      else verdict = 'inconclusive';
+      verified.push({ ...claims[i], verdict, votes, tally });
+      log('  → ' + verdict + ' (' + tally.confirmed + '/' + tally.refuted + '/' + tally.inconclusive + ' c/r/i)', verdict === 'confirmed' ? 'ok' : verdict === 'refuted' ? 'err' : 'warn');
+    }
+
+    // PHASE 5 · SIGN + RENDER
+    setPhase(4);
+    log('signing envelope against Konomi key…');
+    const finalHash = await sha256(JSON.stringify({ q, claims: verified, sources, ts: Date.now() }));
+    const envelope = await mintAnswerEnvelope({ question: q, claims: verified, sources, finalHash });
+    setPhase(5, 'done');
+    document.querySelectorAll('.prog-step').forEach(el => el.classList.add('done'));
+
+    CURRENT_ANSWER = { question: q, claims: verified, sources, finalHash, envelope, startedAt: new Date().toISOString() };
+
+    // award κ if zero refuted
+    const refutedCount = verified.filter(c => c.verdict === 'refuted').length;
+    if (refutedCount === 0 && window.KCC) await KCC.earn(5, 'clean answer · 0 refuted · ' + q.slice(0, 60));
+
+    // persist
+    HISTORY.unshift({
+      id: 'ans-' + Math.random().toString(36).slice(2,10),
+      q,
+      finalHash,
+      ts: CURRENT_ANSWER.startedAt,
+      claimsTotal: verified.length,
+      claimsConfirmed: verified.filter(c => c.verdict === 'confirmed').length,
+      claimsRefuted: refutedCount,
+      envelope,
+    });
+    if (HISTORY.length > 100) HISTORY.length = 100;
+    lsSet('history', HISTORY);
+
+    renderAnswer(CURRENT_ANSWER);
+  } catch (e) {
+    log('pipeline failed · ' + e.message, 'err');
+    setPhase(PROG.phase, 'error');
+  } finally {
+    document.getElementById('askBtn').disabled = false;
+  }
+}
+
+function parseClaims(resp, sources) {
+  try {
+    const m = resp.match(/\{[\s\S]*\}/);
+    if (!m) return [];
+    const j = JSON.parse(m[0]);
+    return (j.claims || []).map(c => ({
+      text: c.text,
+      source: sources[c.source_index] || sources[0] || { url: '—', title: '—' },
+    }));
+  } catch (e) {
+    log('claim parsing failed · falling back to mock claim', 'warn');
+    return [{ text: resp.slice(0, 200), source: sources[0] || { url: '—', title: '—' } }];
+  }
+}
+
+async function verifyClaim(claim, sources, numVerif) {
+  const cfg = lsGet('llmConfig', {});
+  const verifModel = cfg.verifierModel || cfg.synthesisModel || defaultModel(cfg.provider);
+  const sourcesText = sources.map((s, i) => `[${i}] ${s.title}\n${s.content}\nURL: ${s.url}`).join('\n\n---\n\n');
+  const framings = [
+    `You are a SKEPTICAL fact-checker. Try to REFUTE the following claim using only the sources provided. If the claim is not directly supported, mark it refuted. Return STRICT JSON: {"verdict":"confirmed|refuted|inconclusive","reason":"…"}`,
+    `You are a SUPPORTIVE fact-checker. Try to CONFIRM the following claim from the sources. Confirm only if the sources directly support it. Return STRICT JSON: {"verdict":"confirmed|refuted|inconclusive","reason":"…"}`,
+    `You are a NEUTRAL evidence-weigher. Assess whether the sources support, refute, or are inconclusive about the claim. Return STRICT JSON: {"verdict":"confirmed|refuted|inconclusive","reason":"…"}`,
+    `You are an independent reviewer. Confirm/refute/inconclusive on the claim using only the sources. Be strict. Return STRICT JSON: {"verdict":"confirmed|refuted|inconclusive","reason":"…"}`,
+    `You are a final-pass auditor. Confirm/refute/inconclusive. JSON only.`,
+  ];
+  const votes = [];
+  for (let i = 0; i < numVerif; i++) {
+    const sys = framings[i % framings.length];
+    const user = `CLAIM: ${claim.text}\n\nSOURCES:\n${sourcesText}`;
+    const resp = await LLM.call(sys, user, { kind: 'verify', maxTokens: 250, model: verifModel });
+    try {
+      const m = resp.match(/\{[\s\S]*\}/);
+      const j = JSON.parse(m[0]);
+      votes.push({ verdict: j.verdict, reason: j.reason || '', framing: i });
+    } catch (_) {
+      votes.push({ verdict: 'inconclusive', reason: 'parse failed', framing: i });
+    }
+  }
+  return votes;
+}
+
+function renderAnswer(A) {
+  document.getElementById('ansQ').textContent = A.question;
+  document.getElementById('ansHash').textContent = A.finalHash.slice(0, 32) + '…';
+
+  const confirmed = A.claims.filter(c => c.verdict === 'confirmed').length;
+  const refuted = A.claims.filter(c => c.verdict === 'refuted').length;
+  const inconclusive = A.claims.filter(c => c.verdict === 'inconclusive').length;
+  const tot = A.claims.length;
+  const conf = tot ? Math.round((confirmed / tot) * 100) : 0;
+  let verdictTxt;
+  if (conf >= 70) verdictTxt = '<span style="color:var(--green)">HIGH CONFIDENCE · ' + confirmed + '/' + tot + ' verified</span>';
+  else if (conf >= 40) verdictTxt = '<span style="color:var(--gold)">MODERATE · ' + confirmed + '/' + tot + ' verified · ' + refuted + ' refuted</span>';
+  else verdictTxt = '<span style="color:var(--red)">LOW · ' + confirmed + '/' + tot + ' verified · ' + refuted + ' refuted</span>';
+  document.getElementById('ansVerdict').innerHTML = verdictTxt;
+
+  const body = document.getElementById('ansBody');
+  body.innerHTML = '';
+  A.claims.filter(c => c.verdict !== 'refuted').forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'claim ' + c.verdict;
+    div.innerHTML = `
+      <div class="top">
+        <div class="text">${esc(c.text)}</div>
+        <span class="verdict ${c.verdict}">${c.verdict}</span>
+      </div>
+      <div class="src">↳ <a href="${esc(c.source.url)}" target="_blank">${esc(c.source.title || c.source.url)}</a></div>
+      <div class="votes">votes: ${c.tally.confirmed}c / ${c.tally.refuted}r / ${c.tally.inconclusive}i</div>
+    `;
+    body.appendChild(div);
+  });
+
+  const refutedList = A.claims.filter(c => c.verdict === 'refuted');
+  const refBox = document.getElementById('ansRefuted');
+  if (refutedList.length === 0) {
+    refBox.style.display = 'none';
+  } else {
+    refBox.style.display = 'block';
+    document.getElementById('ansRefutedList').innerHTML = refutedList.map(c => `
+      <div class="claim refuted">
+        <div class="top">
+          <div class="text">❌ ${esc(c.text)}</div>
+          <span class="verdict refuted">refuted</span>
+        </div>
+        <div class="src">claimed by: <a href="${esc(c.source.url)}" target="_blank">${esc(c.source.title || c.source.url)}</a></div>
+        <div class="votes">${c.tally.refuted} of ${c.votes.length} verifiers refuted</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('answer').classList.add('active');
+  document.getElementById('answer').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+async function mintAnswerEnvelope({ question, claims, sources, finalHash }) {
+  if (!KONOMI.ready) await KONOMI.init();
+  const env = {
+    kind: 'honestly-answer-v1',
+    issuer: KONOMI.publicKeyHex,
+    issuedAt: new Date().toISOString(),
+    question,
+    claimsTotal: claims.length,
+    claimsConfirmed: claims.filter(c => c.verdict === 'confirmed').length,
+    claimsRefuted: claims.filter(c => c.verdict === 'refuted').length,
+    finalHash,
+    sources: sources.map(s => ({ title: s.title, url: s.url })),
+    summary: claims.filter(c => c.verdict === 'confirmed').slice(0, 3).map(c => c.text),
+  };
+  const sig = await KONOMI.sign(JSON.stringify(env));
+  return { envelope: env, signature: sig };
+}
+
+function copyAnswer() {
+  if (!CURRENT_ANSWER) return;
+  const md = buildMarkdown(CURRENT_ANSWER);
+  navigator.clipboard.writeText(md).then(() => toast('markdown copied'));
+}
+
+function buildMarkdown(A) {
+  let md = `# ${A.question}\n\n`;
+  md += `_◊ HONESTLY · ${new Date(A.startedAt).toLocaleString()}_\n\n`;
+  md += `_${A.claims.filter(c=>c.verdict==='confirmed').length}/${A.claims.length} claims verified · final hash: ${A.finalHash.slice(0,16)}…_\n\n---\n\n`;
+  md += `## Confirmed\n\n`;
+  A.claims.filter(c => c.verdict === 'confirmed').forEach(c => {
+    md += `- ${c.text} _[${c.source.title || c.source.url}](${c.source.url})_\n`;
+  });
+  const incon = A.claims.filter(c => c.verdict === 'inconclusive');
+  if (incon.length) {
+    md += `\n## Inconclusive\n\n`;
+    incon.forEach(c => { md += `- ${c.text} _[${c.source.title || c.source.url}](${c.source.url})_\n`; });
+  }
+  const ref = A.claims.filter(c => c.verdict === 'refuted');
+  if (ref.length) {
+    md += `\n## ❌ Refuted (the honesty layer)\n\n`;
+    ref.forEach(c => { md += `- ❌ ${c.text} _claimed by [${c.source.title || c.source.url}](${c.source.url})_\n`; });
+  }
+  md += `\n---\n\n_Signed against Konomi key: ${KONOMI.publicKeyHex.slice(0,16)}…_\n`;
+  md += `_Audit chain hash: ${A.finalHash}_\n`;
+  return md;
+}
+
+function downloadEnvelope() {
+  if (!CURRENT_ANSWER) return;
+  const blob = new Blob([JSON.stringify(CURRENT_ANSWER.envelope, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'honestly-answer-' + CURRENT_ANSWER.finalHash.slice(0, 8) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function generateShareUrl() {
+  if (!CURRENT_ANSWER) return;
+  const b64 = btoa(JSON.stringify(CURRENT_ANSWER.envelope));
+  const url = location.origin + location.pathname + '?envelope=' + encodeURIComponent(b64);
+  navigator.clipboard.writeText(url).then(() => toast('share URL copied · paste anywhere · others can verify the signature'));
+}
+
+function loadDemoAnswer() {
+  CURRENT_ANSWER = {
+    question: 'Did GDPR genuinely improve EU citizens privacy in 2024?',
+    finalHash: 'demo'.repeat(16).slice(0, 64),
+    startedAt: new Date().toISOString(),
+    claims: [
+      { text: 'GDPR enforcement actions in 2024 totalled over €2.1bn in fines against tech companies', verdict: 'confirmed', source: { title: 'GDPR Enforcement Tracker', url: 'https://www.enforcementtracker.com' }, votes: [{verdict:'confirmed'},{verdict:'confirmed'},{verdict:'inconclusive'}], tally: {confirmed:2, refuted:0, inconclusive:1} },
+      { text: 'EU citizens report higher trust in online services compared to pre-GDPR baseline', verdict: 'inconclusive', source: { title: 'Eurobarometer 2024', url: 'https://europa.eu/eurobarometer' }, votes: [{verdict:'inconclusive'},{verdict:'confirmed'},{verdict:'inconclusive'}], tally: {confirmed:1, refuted:0, inconclusive:2} },
+      { text: 'GDPR DSAR completion rates have not significantly improved since 2019', verdict: 'confirmed', source: { title: 'ICO Annual Report 2024', url: 'https://ico.org.uk' }, votes: [{verdict:'confirmed'},{verdict:'confirmed'},{verdict:'confirmed'}], tally: {confirmed:3, refuted:0, inconclusive:0} },
+      { text: 'Schrems II ruling effectively halted all US-EU data transfers', verdict: 'refuted', source: { title: 'Random privacy blog', url: 'https://example.com/wrong' }, votes: [{verdict:'refuted'},{verdict:'refuted'},{verdict:'confirmed'}], tally: {confirmed:1, refuted:2, inconclusive:0} },
+      { text: 'Major US tech companies are GDPR-compliant per their own attestations', verdict: 'refuted', source: { title: 'Marketing piece', url: 'https://example.com/marketing' }, votes: [{verdict:'refuted'},{verdict:'refuted'},{verdict:'refuted'}], tally: {confirmed:0, refuted:3, inconclusive:0} },
+    ],
+    sources: [
+      { title: 'GDPR Enforcement Tracker', url: 'https://www.enforcementtracker.com' },
+      { title: 'Eurobarometer 2024', url: 'https://europa.eu/eurobarometer' },
+      { title: 'ICO Annual Report 2024', url: 'https://ico.org.uk' },
+    ],
+    envelope: null,
+  };
+  renderAnswer(CURRENT_ANSWER);
+}
+
+// ═════════════════════════════════════════════════════════════
+// AUDIT CHAIN
+// ═════════════════════════════════════════════════════════════
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ═════════════════════════════════════════════════════════════
+// KONOMI · libsodium-wasm
+// ═════════════════════════════════════════════════════════════
+let _sodPromise = null;
+async function getSodium() {
+  if (!_sodPromise) _sodPromise = (async () => {
+    const m = await import('https://esm.run/libsodium-wrappers@0.7.13');
+    const s = m.default || m; await s.ready; return s;
+  })();
+  return _sodPromise;
+}
+const IDB = 'honestly.v1';
+function idbOpen(){return new Promise((r,j)=>{const q=indexedDB.open(IDB,1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});}
+async function idbGet(k){const db=await idbOpen();return new Promise(r=>{const q=db.transaction('kv','readonly').objectStore('kv').get(k);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null);});}
+async function idbSet(k,v){const db=await idbOpen();return new Promise(r=>{const q=db.transaction('kv','readwrite').objectStore('kv').put(v,k);q.onsuccess=()=>r(true);q.onerror=()=>r(false);});}
+
+const KONOMI = { keypair:null, publicKeyHex:'', createdAt:null, ready:false,
+  async init() {
+    let s = await idbGet('konomi-keypair');
+    const sod = await getSodium();
+    if (!s) {
+      const k = sod.crypto_sign_keypair();
+      s = { publicKey: Array.from(k.publicKey), privateKey: Array.from(k.privateKey), createdAt: new Date().toISOString() };
+      await idbSet('konomi-keypair', s);
+    }
+    this.keypair = { publicKey: new Uint8Array(s.publicKey), privateKey: new Uint8Array(s.privateKey) };
+    this.publicKeyHex = sod.to_hex(this.keypair.publicKey);
+    this.createdAt = s.createdAt;
+    this.ready = true;
+    renderKonomi();
+  },
+  async sign(msg) { const s = await getSodium(); return s.to_hex(s.crypto_sign_detached(typeof msg==='string'?s.from_string(msg):msg, this.keypair.privateKey)); },
+  async exportSeed() { const s = await getSodium(); return s.to_hex(this.keypair.privateKey.slice(0,32)); },
+  async importSeed(hex) {
+    const s = await getSodium();
+    const seed = s.from_hex(hex);
+    if (seed.length !== 32) throw new Error('seed must be 32 bytes (64 hex chars)');
+    const k = s.crypto_sign_seed_keypair(seed);
+    const stored = { publicKey: Array.from(k.publicKey), privateKey: Array.from(k.privateKey), createdAt: new Date().toISOString() };
+    await idbSet('konomi-keypair', stored);
+    this.keypair = { publicKey: k.publicKey, privateKey: k.privateKey };
+    this.publicKeyHex = s.to_hex(k.publicKey);
+    this.createdAt = stored.createdAt;
+    renderKonomi();
+  }
+};
+
+// ═════════════════════════════════════════════════════════════
+// KCC
+// ═════════════════════════════════════════════════════════════
+const KCC = { balance:0, lifetime:0, cleans:0, ledger:[],
+  async load() {
+    const s = await idbGet('kcc') || { balance:0, lifetime:0, cleans:0, ledger:[] };
+    Object.assign(this, s);
+    renderKcc();
+  },
+  async earn(d, reason) {
+    this.balance += d; this.lifetime += d; this.cleans++;
+    const e = { kind:'earn', delta:d, reason, ts:Date.now(), balance:this.balance };
+    if (KONOMI.ready) e.sig = await KONOMI.sign(JSON.stringify(e));
+    this.ledger.unshift(e);
+    if (this.ledger.length > 500) this.ledger.length = 500;
+    await idbSet('kcc', { balance:this.balance, lifetime:this.lifetime, cleans:this.cleans, ledger:this.ledger });
+    try { new BroadcastChannel('kcc-signal').postMessage({ type:'kcc:earn', tool:'honestly', delta:d, balance:this.balance, issuer:KONOMI.publicKeyHex }); } catch (_) {}
+    renderKcc();
+  }
+};
+
+function renderKonomi() {
+  const s = document.getElementById('konomiStatus');
+  if (s) s.textContent = KONOMI.ready ? '◊ ready' : 'initialising';
+  const p = document.getElementById('konomiPubKey');
+  if (p) p.textContent = KONOMI.publicKeyHex || '—';
+  const c = document.getElementById('konomiCreated');
+  if (c) c.textContent = KONOMI.createdAt ? new Date(KONOMI.createdAt).toLocaleString() : '—';
+}
+function renderKcc() {
+  ['kccBalance','kccCurrentBal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = KCC.balance; });
+  const lt = document.getElementById('kccLifetime'); if (lt) lt.textContent = KCC.lifetime;
+  const cn = document.getElementById('kccCleans'); if (cn) cn.textContent = KCC.cleans;
+}
+
+async function exportKonomiSeed() {
+  if (!KONOMI.ready) return toast('not ready');
+  const seed = await KONOMI.exportSeed();
+  showModal('◊ your Konomi seed', '<p class="dim">Copy this 64-char hex string. Anyone with this seed can sign as you. Treat it like a private key.</p><div class="code-block">' + seed + '</div><button class="btn btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(\'' + seed + '\').then(()=>toast(\'seed copied\'))">copy</button>');
+}
+async function importKonomiSeed() {
+  const s = prompt('Paste 64-char hex seed:'); if (!s) return;
+  try { await KONOMI.importSeed(s.trim()); toast('identity restored'); }
+  catch (e) { toast('bad seed · ' + e.message); }
+}
+function copyPubKey() { navigator.clipboard.writeText(KONOMI.publicKeyHex).then(() => toast('public key copied')); }
+
+// ═════════════════════════════════════════════════════════════
+// SETTINGS
+// ═════════════════════════════════════════════════════════════
+function loadSettings() {
+  const s = lsGet('searchConfig', {});
+  document.getElementById('searchProvider').value = s.provider || '';
+  document.getElementById('searchKey').value = s.key || '';
+  const l = lsGet('llmConfig', {});
+  document.getElementById('llmProvider').value = l.provider || '';
+  document.getElementById('llmKey').value = l.key || '';
+  document.getElementById('llmModel').value = l.synthesisModel || '';
+  document.getElementById('verifModel').value = l.verifierModel || '';
+}
+function saveSearchConfig() {
+  lsSet('searchConfig', {
+    provider: document.getElementById('searchProvider').value,
+    key: document.getElementById('searchKey').value,
+  });
+  toast('search config saved');
+}
+function saveLlmConfig() {
+  lsSet('llmConfig', {
+    provider: document.getElementById('llmProvider').value,
+    key: document.getElementById('llmKey').value,
+    synthesisModel: document.getElementById('llmModel').value,
+    verifierModel: document.getElementById('verifModel').value,
+  });
+  toast('LLM config saved');
+}
+
+// ═════════════════════════════════════════════════════════════
+// HISTORY
+// ═════════════════════════════════════════════════════════════
+function renderHistory() {
+  const el = document.getElementById('histList');
+  if (HISTORY.length === 0) {
+    el.innerHTML = '<div class="dim" style="text-align:center;padding:24px;font-size:13px">no answers yet · ask a question</div>';
+    return;
+  }
+  el.innerHTML = HISTORY.map(h => `
+    <div class="hist-row" onclick="reopenAnswer('${h.id}')">
+      <div>
+        <div class="q">${esc(h.q)}</div>
+        <div class="meta">${new Date(h.ts).toLocaleString()} · ${h.claimsConfirmed}/${h.claimsTotal} confirmed · ${h.claimsRefuted} refuted</div>
+        <div class="hash">${h.finalHash.slice(0,40)}…</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();exportHistoryEnvelope('${h.id}')">export</button>
+    </div>
+  `).join('');
+}
+function reopenAnswer(id) {
+  const h = HISTORY.find(x => x.id === id);
+  if (!h) return;
+  // we don't have the full claim data in history (only summary) · open envelope view
+  showModal('◊ envelope', '<div class="code-block">' + esc(JSON.stringify(h.envelope, null, 2)) + '</div>');
+}
+function exportHistoryEnvelope(id) {
+  const h = HISTORY.find(x => x.id === id);
+  if (!h) return;
+  const blob = new Blob([JSON.stringify(h.envelope, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'honestly-' + h.finalHash.slice(0,8) + '.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═════════════════════════════════════════════════════════════
+// MESH
+// ═════════════════════════════════════════════════════════════
+const meshSeen = {};
+function startMesh() {
+  try {
+    const bc = new BroadcastChannel('fall-signal');
+    bc.onmessage = (e) => { if (e.data && e.data.tool) { meshSeen[e.data.tool] = Date.now(); renderMesh(); } };
+  } catch (_) {}
+}
+function renderMesh() {
+  const el = document.getElementById('meshList');
+  if (!el) return;
+  const tools = Object.keys(meshSeen).sort();
+  el.innerHTML = tools.length === 0 ? 'listening…' : tools.map(t => `<div>◊ ${t} · <span style="color:var(--cream-deep)">${new Date(meshSeen[t]).toLocaleTimeString()}</span></div>`).join('');
+}
+
+// ═════════════════════════════════════════════════════════════
+// HELPERS
+// ═════════════════════════════════════════════════════════════
+function esc(s) { return String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(m) {
+  const t = document.createElement('div'); t.textContent = m;
+  Object.assign(t.style, {position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'var(--void-2)',border:'1px solid var(--gold)',color:'var(--cream)',padding:'9px 18px',borderRadius:'5px',zIndex:'100',fontSize:'13px',boxShadow:'0 4px 18px rgba(0,0,0,.4)'});
+  document.body.appendChild(t); setTimeout(()=>t.remove(), 1900);
+}
+function showModal(title, body) {
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mBody').innerHTML = body;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ═════════════════════════════════════════════════════════════
+// SHARE URL · base64 envelope verification
+// ═════════════════════════════════════════════════════════════
+async function checkShareUrl() {
+  const p = new URLSearchParams(location.search);
+  if (!p.has('envelope')) return;
+  try {
+    const env = JSON.parse(atob(p.get('envelope')));
+    const sod = await getSodium();
+    // verify needs the signature · share URLs include only envelope · we just display + note "verify against issuer pubkey"
+    showModal('◊ shared answer · cryptographic provenance', `
+      <p><strong>Question:</strong> ${esc(env.question)}</p>
+      <p><strong>Issuer pubkey:</strong> <span class="kid">${esc(env.issuer)}</span></p>
+      <p><strong>Issued:</strong> ${new Date(env.issuedAt).toLocaleString()}</p>
+      <p><strong>${env.claimsConfirmed}/${env.claimsTotal} claims verified · ${env.claimsRefuted} refuted</strong></p>
+      <p><strong>Summary:</strong></p>
+      <ul>${(env.summary || []).map(s => '<li>' + esc(s) + '</li>').join('')}</ul>
+      <p class="dim" style="font-size:11px">Audit chain hash: <span class="kid">${esc(env.finalHash)}</span></p>
+      <p class="dim" style="font-size:11px">To cryptographically verify the signature, download the original envelope JSON with signature included.</p>
+    `);
+  } catch (e) {
+    console.warn('share url parse failed', e);
+  }
+}
+
+// ═════════════════════════════════════════════════════════════
+// BOOT
+// ═════════════════════════════════════════════════════════════
+(async function boot() {
+  startMesh();
+  loadSettings();
+  try { new BroadcastChannel('fall-signal').postMessage({ type:'tool:ready', tool:'honestly', ts:Date.now() }); } catch (_) {}
+  try {
+    await KONOMI.init();
+    await KCC.load();
+    if (KCC.lifetime === 0 && KCC.balance === 0) await KCC.earn(3, 'welcome to HONESTLY · initial issuance');
+  } catch (e) { console.warn('Konomi init failed', e); }
+  await checkShareUrl();
+})();
+</script>
+</body>
+</html>
